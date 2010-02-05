@@ -15,16 +15,18 @@ end
 
 
 class Landing
-
+attr_accessor :screen, :rect
   def initialize screen
+  
     @screen = screen
     @img = Surface.load("graphics/tank.png")
-    @x = 150
-    @y = 450
+	@rect = @img.make_rect
+	@rect.x = 150
+	@rect.y = 455
   end
   
   def update
-    @img.blit(@screen, [@x, @y])
+    @img.blit(@screen,[@rect.x,@rect.y])
     #@screen.flip()
   end
   
@@ -32,42 +34,44 @@ end
 
 class Mammal
 	include Rubygame::EventHandler::HasEventHandler
-	attr_accessor :queue, :screen, :x, :y, :direction
+	attr_accessor :queue, :screen, :x, :y, :direction, :rect
 	def initialize screen, speed, x, y
 		@screen = screen
 		@img = Surface.load("graphics/whale.png")
-	    @x = x
-		@y = y
+		@rect = @img.make_rect
+	    @rect.x = x
+		@rect.y = y
 		@speed = speed
 		@direction = "left"
 	end
 			
-	def update
-		if @direction == "left"
-			@x -= @speed
-			
-		else
-			@y += @speed + 5
+		def update
+			if @direction == "left"
+				@rect.x -= @speed
+				
+			else
+				@rect.y += @speed + 5
+			end
+			@img.blit(@screen,[@rect.x,@rect.y])
+			#@screen.flip()
 		end
-		@img.blit(@screen,[@x,@y])
-		#@screen.flip()
 	end
-end
 
-class Player
-	include Rubygame::EventHandler::HasEventHandler
-	attr_accessor :queue, :screen, :x, :y, :load, :score
-	def initialize screen
-		@screen = screen
-		@queue = Rubygame::EventQueue.new()
-		@queue.enable_new_style_events()
+	class Player
+		include Rubygame::EventHandler::HasEventHandler
+		attr_accessor :queue, :screen, :x, :y, :load, :score, :speed, :tank
+		def initialize screen
+		  @screen = screen
+		  @queue = Rubygame::EventQueue.new()
+		  @queue.enable_new_style_events()
 		@img = Surface.load("graphics/helicopter.png")
 		@points = 0
 	    @x = 300
 		@y = 50
+		@speed = 2
 		@load_x = @x + 30
 		@load_y = @y + 34
-		@load = Mammal.new(screen, 5, @load_x, @load_y)
+		@load = Mammal.new(screen, @speed, @load_x, @load_y)
 		@tank = Landing.new(screen)
 		@score = Score.new(screen, @points)
 	end
@@ -90,10 +94,17 @@ class Player
 		handle(event)
 		end
 	end
+	
+	def check_hit
+	  if @load.rect.collide_rect?(@tank.rect)
+		puts 'hit'
+	  end
+	end
 			
 	def update
-	    @x -= 5
+	    @x -= @speed
 		@img.blit(@screen,[@x,@y])
+		check_hit
 		@load.update
 		@tank.update
 		@score.update
