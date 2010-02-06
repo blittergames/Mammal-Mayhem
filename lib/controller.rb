@@ -59,7 +59,7 @@ class Mammal
 
 	class Player
 		include Rubygame::EventHandler::HasEventHandler
-		attr_accessor :queue, :screen, :x, :y, :load, :score, :speed, :tank
+		attr_accessor :queue, :screen, :x, :y, :load, :score, :speed, :tank, :points, :text, :score_sdn
 		def initialize screen
 		  @screen = screen
 		  @queue = Rubygame::EventQueue.new()
@@ -74,6 +74,11 @@ class Mammal
 		@load = Mammal.new(screen, @speed, @load_x, @load_y)
 		@tank = Landing.new(screen)
 		@score = Score.new(screen, @points)
+		
+      @font = TTF.new("fonts/LVDCGO__.TTF",18)
+      @text_str = "#{@points}"
+	  @text = @font.render(@text_str,false,[242,0,255])
+	  @score_snd = Sound.load("sounds/score.ogg")
 	end
 	
 	def release
@@ -97,7 +102,12 @@ class Mammal
 	
 	def check_hit
 	  if @load.rect.collide_rect?(@tank.rect)
-		puts 'hit'
+		@score_snd.play
+		puts "hit! points: #{@points}"
+		@points += 10
+		@text_str = "#{@points}"
+		@text = @font.render(@text_str,false,[242,0,255])
+		puts "hit!! points: #{@points}"
 	  end
 	end
 			
@@ -105,9 +115,10 @@ class Mammal
 	    @x -= @speed
 		@img.blit(@screen,[@x,@y])
 		check_hit
+		@text.blit(@screen,[10,10])
 		@load.update
 		@tank.update
-		@score.update
+		#@score.update
 		@screen.flip()
 	end
 end
