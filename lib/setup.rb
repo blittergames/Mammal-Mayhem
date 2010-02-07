@@ -3,6 +3,8 @@ class Setup
 
   # This is needed for handling input/events
   include Rubygame::EventHandler::HasEventHandler
+  
+  attr_accessor :music
 
   def initialize
 	# Setting up the window screen
@@ -13,6 +15,7 @@ class Setup
 	@control = Controller.new(@screen)
 	# Setting the intro screen image
 	@intro_screen = Surface.load("graphics/intro_screen.png")
+	@music = Sound.load("sounds/batman.ogg")
   end
   
   # For exiting out of the game	
@@ -32,6 +35,7 @@ class Setup
 
   # Main loop for setup class
   def run
+    @music.play(:repeats => -1)
 	hook_run()
 	hook_quit()
 	# Handling input

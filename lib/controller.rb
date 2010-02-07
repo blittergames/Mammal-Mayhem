@@ -34,16 +34,20 @@ end
 
 class Mammal
 	include Rubygame::EventHandler::HasEventHandler
-	attr_accessor :queue, :screen, :x, :y, :direction, :rect, :drop_snd
+	attr_accessor :queue, :screen, :x, :y, :direction, :rect, :drop_snd, :splat_snd, :img, :img2
 	def initialize screen, speed, x, y
 		@screen = screen
 		@img = Surface.load("graphics/whale.png")
+		@img.set_colorkey([0,0,0])
+		@img2 = Surface.load("graphics/whale_dead.png")
+		@img2.set_colorkey([0,0,0])
 		@rect = @img.make_rect
 	    @rect.x = x
 		@rect.y = y
 		@speed = speed
 		@direction = "left"
 		@drop_snd = Sound.load("sounds/whale.ogg")
+		@splat_snd = Sound.load("sounds/splat.ogg")
 	end
 			
 		def update
@@ -60,7 +64,7 @@ class Mammal
 
 	class Player
 		include Rubygame::EventHandler::HasEventHandler
-		attr_accessor :queue, :screen, :x, :y, :load, :score, :speed, :tank, :points, :text, :score_snd
+		attr_accessor :queue, :screen, :x, :y, :load, :score, :speed, :tank, :points, :text, :score_snd, :loop, :splat_loop
 		def initialize screen
 		  @screen = screen
 		  @queue = Rubygame::EventQueue.new()
@@ -70,12 +74,13 @@ class Mammal
 	    @x = 300
 		@y = 50
 		@speed = 2
-		@load_x = @x + 30
-		@load_y = @y + 34
+		@load_x = @x + 15
+		@load_y = @y + 30
 		@load = Mammal.new(screen, @speed, @load_x, @load_y)
 		@tank = Landing.new(screen)
 		@score = Score.new(screen, @points)
-		
+		@loop = 1
+		@splat_loop = 1
       @font = TTF.new("fonts/LVDCGO__.TTF",18)
       @text_str = "#{@points}"
 	  @text = @font.render(@text_str,false,[242,0,255])
@@ -104,13 +109,25 @@ class Mammal
 	end
 	
 	def check_hit
-	  if @load.rect.collide_rect?(@tank.rect)
-		@score_snd.play
-		puts "hit! points: #{@points}"
-		@points += 10
-		@text_str = "#{@points}"
-		@text = @font.render(@text_str,false,[242,0,255])
-		puts "hit!! points: #{@points}"
+	  if @loop == 1
+	    if @load.rect.collide_rect?(@tank.rect)
+		  @score_snd.play
+		  puts "hit! points: #{@points}"
+		  puts "loop: #{@loop}"
+		  @points += 10
+		  @text_str = "#{@points}"
+		  @text = @font.render(@text_str,false,[242,0,255])
+		  @loop = 0
+		elsif @load.rect.y > 450
+		  @load.img = @load.img2
+		  if @splat_loop == 1
+		  
+			@load.splat_snd.play
+			@splat_loop = 0
+		  end
+		  puts 'near floor!'
+		  @load.rect.y = 450
+	    end		
 	  end
 	end
 			
@@ -118,7 +135,7 @@ class Mammal
 	    @x -= @speed
 		@img.blit(@screen,[@x,@y])
 		check_hit
-		@text.blit(@screen,[10,10])
+		@text.blit(@screen,[150,10])
 		@load.update
 		@tank.update
 		#@score.update
