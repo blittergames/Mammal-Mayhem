@@ -34,7 +34,7 @@ end
 
 class Mammal
 	include Rubygame::EventHandler::HasEventHandler
-	attr_accessor :queue, :screen, :x, :y, :direction, :rect
+	attr_accessor :queue, :screen, :x, :y, :direction, :rect, :drop_snd
 	def initialize screen, speed, x, y
 		@screen = screen
 		@img = Surface.load("graphics/whale.png")
@@ -43,6 +43,7 @@ class Mammal
 		@rect.y = y
 		@speed = speed
 		@direction = "left"
+		@drop_snd = Sound.load("sounds/whale.ogg")
 	end
 			
 		def update
@@ -59,7 +60,7 @@ class Mammal
 
 	class Player
 		include Rubygame::EventHandler::HasEventHandler
-		attr_accessor :queue, :screen, :x, :y, :load, :score, :speed, :tank, :points, :text, :score_sdn
+		attr_accessor :queue, :screen, :x, :y, :load, :score, :speed, :tank, :points, :text, :score_snd
 		def initialize screen
 		  @screen = screen
 		  @queue = Rubygame::EventQueue.new()
@@ -79,10 +80,12 @@ class Mammal
       @text_str = "#{@points}"
 	  @text = @font.render(@text_str,false,[242,0,255])
 	  @score_snd = Sound.load("sounds/score.ogg")
+	  @miss_snd = Sound.load("sounds/miss.ogg")
 	end
 	
 	def release
 		puts 'spacebar key hit!'
+		@load.drop_snd.play
 		#call release function for mammal to go vertical
 		@load.direction = "down"
 	end
